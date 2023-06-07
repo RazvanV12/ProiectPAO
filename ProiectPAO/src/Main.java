@@ -1,4 +1,8 @@
+import java.sql.*;
 import java.util.*;
+
+import com.mysql.cj.jdbc.Driver;
+
 
 // Tipuri Obiecte - Curs, Utilizator, Instructor, Cursant, Quiz, Lectie, RaportPerformanta, GrupDeStudiu
 // Actiuni/Interogari ( se gasesc in clasa E_LearningServices ):
@@ -18,8 +22,8 @@ import java.util.*;
 
 // Clasa Curs
 class Curs {
-    private final String titlu;
-    private final String categorie;
+    private  String titlu;
+    private  String categorie;
     private List<Quiz> quizList;
     private List<Lectie> lectieList;
     private Instructor instructor;
@@ -38,6 +42,13 @@ class Curs {
 
     public void addLectie(Lectie lectie) {
         lectieList.add(lectie);
+    }
+
+    public void setTitlu(String titlu){
+        this.titlu = titlu;
+    }
+    public void setCategorie(String categorie){
+        this.categorie = categorie;
     }
 
     public void removeLectie(Lectie lectie) {
@@ -247,6 +258,7 @@ class Quiz {
 
 // Clasa E_LearningService - serviciul care expune operațiile sistemului
 class E_LearningService {
+    private static E_LearningService instance;
     private List<Curs> listaCursuri;
     private Set<Utilizator> listaUtilizatori;
 
@@ -260,6 +272,12 @@ class E_LearningService {
         mapQuizuri = new HashMap<>();
         listaInstructori = new ArrayList<>();
         listaCursanti = new ArrayList<>();
+    }
+    public static synchronized E_LearningService getInstance() {
+        if (instance == null) {
+            instance = new E_LearningService();
+        }
+        return instance;
     }
 
     public E_LearningService(List<Curs> listaCursuri, Set<Utilizator> listaUtilizatori, List<Cursant> listaCursanti,
@@ -316,18 +334,622 @@ class E_LearningService {
     public void setMapQuizuri(Map<Curs, List<Quiz>> mapQuizuri) {
         this.mapQuizuri = mapQuizuri;
     }
-    public void adaugaCurs(Curs curs) {
-        listaCursuri.add(curs);
+//    public int getCursantId(String nume, String prenume) {
+//        int cursantId = -1;
+//        String url = "jdbc:mysql://localhost:3306/paoproiect";
+//        String username = "root";
+//        String password = "Muffin2325";
+//
+//        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+//            String schemaName = "paoproiect";
+//            connection.setSchema(schemaName);
+//            String query = "SELECT id FROM cursanti WHERE nume = ? AND prenume = ?";
+//            try (PreparedStatement statement = connection.prepareStatement(query)) {
+//                statement.setString(1, nume);
+//                statement.setString(2, prenume);
+//                try (ResultSet resultSet = statement.executeQuery()) {
+//                    if (resultSet.next()) {
+//                        cursantId = resultSet.getInt("id");
+//                    }
+//                }
+//            }
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//
+//        return cursantId;
+//    }
+//    public int getUtilizatorId(String nume, String prenume) {
+//        int utilizatorId = -1;
+//        String url = "jdbc:mysql://localhost:3306/paoproiect";
+//        String username = "root";
+//        String password = "Muffin2325";
+//
+//        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+//            String schemaName = "paoproiect";
+//            connection.setSchema(schemaName);
+//            String query = "SELECT id FROM Utilizatori WHERE nume = ? AND prenume = ?";
+//            try (PreparedStatement statement = connection.prepareStatement(query)) {
+//                statement.setString(1, nume);
+//                statement.setString(2, prenume);
+//                try (ResultSet resultSet = statement.executeQuery()) {
+//                    if (resultSet.next()) {
+//                        utilizatorId = resultSet.getInt("id");
+//                    }
+//                }
+//            }
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//
+//        return utilizatorId;
+//    }
+//    public int getInstructorId(String nume, String prenume) {
+//        int instructorId = -1;
+//        String url = "jdbc:mysql://localhost:3306/paoproiect";
+//        String username = "root";
+//        String password = "Muffin2325";
+//
+//        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+//            String schemaName = "paoproiect";
+//            connection.setSchema(schemaName);
+//            String query = "SELECT id FROM Instructori WHERE nume = ? AND prenume = ?";
+//            try (PreparedStatement statement = connection.prepareStatement(query)) {
+//                statement.setString(1, nume);
+//                statement.setString(2, prenume);
+//                try (ResultSet resultSet = statement.executeQuery()) {
+//                    if (resultSet.next()) {
+//                        instructorId = resultSet.getInt("id");
+//                    }
+//                }
+//            }
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//
+//        return instructorId;
+//    }
+//    public int getCursId(String categorie, String titlu) {
+//        int cursId = -1;
+//        String url = "jdbc:mysql://localhost:3306/paoproiect";
+//        String username = "root";
+//        String password = "Muffin2325";
+//
+//        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+//            String schemaName = "paoproiect";
+//            connection.setSchema(schemaName);
+//            String query = "SELECT id FROM Cursuri WHERE categorie = ? AND titlu = ?";
+//            try (PreparedStatement statement = connection.prepareStatement(query)) {
+//                statement.setString(1, categorie);
+//                statement.setString(2, titlu);
+//                try (ResultSet resultSet = statement.executeQuery()) {
+//                    if (resultSet.next()) {
+//                        cursId = resultSet.getInt("id");
+//                    }
+//                }
+//            }
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//
+//        return cursId;
+//    }
+//
+//    public void adaugaCurs(List<Curs> cursuri) {
+//        String sqlCreateTable = "CREATE TABLE IF NOT EXISTS Cursuri (" +
+//                "id INT AUTO_INCREMENT PRIMARY KEY," +
+//                "categorie VARCHAR(50) NOT NULL," +
+//                "titlu VARCHAR(50) NOT NULL" +
+//                ")";
+//
+//        String sqlInsert = "INSERT INTO Cursuri (categorie, titlu) VALUES (?, ?)";
+//        String url = "jdbc:mysql://localhost:3306/paoproiect";
+//        String username = "root";
+//        String password = "Muffin2325";
+//
+//        try (Connection connection = DriverManager.getConnection(url, username, password);
+//             PreparedStatement createTableStatement = connection.prepareStatement(sqlCreateTable);
+//             PreparedStatement insertStatement = connection.prepareStatement(sqlInsert)) {
+//            String schemaName = "paoproiect";
+//            connection.setSchema(schemaName);
+//
+//            // Creare tabela Cursuri (dacă nu există deja)
+//            createTableStatement.executeUpdate();
+//
+//            // Adăugare cursuri în tabela cursuri
+//            for (Curs curs : cursuri) {
+//                insertStatement.setString(1, curs.getCategorie());
+//                insertStatement.setString(2, curs.getTitlu());
+//                insertStatement.executeUpdate();
+//            }
+//
+//            System.out.println("Utilizatorii au fost adăugați în tabela Utilizatori.");
+//
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//    }
+//    public void adaugaUtilizator(List<Utilizator> utilizatori) {
+//        String sqlCreateTable = "CREATE TABLE IF NOT EXISTS Utilizatori (" +
+//                "id INT AUTO_INCREMENT PRIMARY KEY," +
+//                "nume VARCHAR(50) NOT NULL," +
+//                "prenume VARCHAR(50) NOT NULL" +
+//                ")";
+//
+//        String sqlInsert = "INSERT INTO Utilizatori (nume, prenume) VALUES (?, ?)";
+//        String url = "jdbc:mysql://localhost:3306/paoproiect";
+//        String username = "root";
+//        String password = "Muffin2325";
+//
+//        try (Connection connection = DriverManager.getConnection(url, username, password);
+//             PreparedStatement createTableStatement = connection.prepareStatement(sqlCreateTable);
+//             PreparedStatement insertStatement = connection.prepareStatement(sqlInsert)) {
+//            String schemaName = "paoproiect";
+//            connection.setSchema(schemaName);
+//
+//            // Creare tabela Utilizatori (dacă nu există deja)
+//            createTableStatement.executeUpdate();
+//
+//            // Adăugare utilizator în tabela Utilizatori
+//            for (Utilizator user : utilizatori) {
+//                insertStatement.setString(1, user.getNume());
+//                insertStatement.setString(2, user.getPrenume());
+//                insertStatement.executeUpdate();
+//            }
+//
+//            System.out.println("Utilizatorii au fost adăugați în tabela Utilizatori.");
+//
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//    }
+//    public void adaugaCursantiInTabela(List<Cursant> cursanti) {
+//        String sqlCreateTable = "CREATE TABLE IF NOT EXISTS Cursanti (" +
+//                "id INT AUTO_INCREMENT PRIMARY KEY," +
+//                "nume VARCHAR(50) NOT NULL," +
+//                "prenume VARCHAR(50) NOT NULL" +
+//                ")";
+//
+//        String sqlInsert = "INSERT INTO Cursanti (nume, prenume) VALUES (?, ?)";
+//        String url = "jdbc:mysql://localhost:3306/paoproiect";
+//        String username = "root";
+//        String password = "Muffin2325";
+//
+//        try (Connection connection = DriverManager.getConnection(url, username, password);
+//             PreparedStatement createTableStatement = connection.prepareStatement(sqlCreateTable);
+//             PreparedStatement insertStatement = connection.prepareStatement(sqlInsert)) {
+//            String schemaName = "paoproiect";
+//            connection.setSchema(schemaName);
+//
+//            // Creare tabela Cursanti (dacă nu există deja)
+//            createTableStatement.executeUpdate();
+//
+//            // Adăugare cursanți în tabela Cursanti
+//            for (Cursant cursant : cursanti) {
+//                insertStatement.setString(1, cursant.getNume());
+//                insertStatement.setString(2, cursant.getPrenume());
+//                insertStatement.executeUpdate();
+//            }
+//
+//            System.out.println("Cursanții au fost adăugați în tabela Cursanti.");
+//
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//    }
+//    public void deleteCursant(Cursant cursant) {
+//        String sqlDelete = "DELETE FROM Cursanti WHERE nume = ? AND prenume = ?";
+//        String url = "jdbc:mysql://localhost:3306/paoproiect";
+//        String username = "root";
+//        String password = "Muffin2325";
+//
+//        try (Connection connection = DriverManager.getConnection(url, username, password);
+//             PreparedStatement deleteStatement = connection.prepareStatement(sqlDelete)) {
+//            String schemaName = "paoproiect";
+//            connection.setSchema(schemaName);
+//
+//            deleteStatement.setString(1, cursant.getNume());
+//            deleteStatement.setString(2, cursant.getPrenume());
+//            int rowsDeleted = deleteStatement.executeUpdate();
+//
+//            if (rowsDeleted > 0) {
+//                System.out.println("Cursantul " + cursant.getNume() + " " + cursant.getPrenume() + " a fost șters cu succes.");
+//            } else {
+//                System.out.println("Nu există cursant cu numele " + cursant.getNume() + " " + cursant.getPrenume() + ".");
+//            }
+//
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//    }
+//    public void deleteUtilizator(Utilizator utilizator) {
+//        String sqlDelete = "DELETE FROM Utilizatori WHERE nume = ? AND prenume = ?";
+//        String url = "jdbc:mysql://localhost:3306/paoproiect";
+//        String username = "root";
+//        String password = "Muffin2325";
+//
+//        try (Connection connection = DriverManager.getConnection(url, username, password);
+//             PreparedStatement deleteStatement = connection.prepareStatement(sqlDelete)) {
+//            String schemaName = "paoproiect";
+//            connection.setSchema(schemaName);
+//
+//            deleteStatement.setString(1, utilizator.getNume());
+//            deleteStatement.setString(2, utilizator.getPrenume());
+//            int rowsDeleted = deleteStatement.executeUpdate();
+//
+//            if (rowsDeleted > 0) {
+//                System.out.println("Cursantul " + utilizator.getNume() + " " + utilizator.getPrenume() + " a fost șters cu succes.");
+//            } else {
+//                System.out.println("Nu există cursant cu numele " + utilizator.getNume() + " " + utilizator.getPrenume() + ".");
+//            }
+//
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//    }
+//
+//    public void deleteInstructor(Instructor instructor) {
+//        String sqlDelete = "DELETE FROM Instructori WHERE nume = ? AND prenume = ?";
+//        String url = "jdbc:mysql://localhost:3306/paoproiect";
+//        String username = "root";
+//        String password = "Muffin2325";
+//
+//        try (Connection connection = DriverManager.getConnection(url, username, password);
+//             PreparedStatement deleteStatement = connection.prepareStatement(sqlDelete)) {
+//            String schemaName = "paoproiect";
+//            connection.setSchema(schemaName);
+//
+//            deleteStatement.setString(1, instructor.getNume());
+//            deleteStatement.setString(2, instructor.getPrenume());
+//            int rowsDeleted = deleteStatement.executeUpdate();
+//
+//            if (rowsDeleted > 0) {
+//                System.out.println("Cursantul " + instructor.getNume() + " " + instructor.getPrenume() + " a fost șters cu succes.");
+//            } else {
+//                System.out.println("Nu există cursant cu numele " + instructor.getNume() + " " + instructor.getPrenume() + ".");
+//            }
+//
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//    }
+//    public void deleteCurs(Curs curs) {
+//        String sqlDelete = "DELETE FROM Cursuri WHERE categorie = ? AND titlu = ?";
+//        String url = "jdbc:mysql://localhost:3306/paoproiect";
+//        String username = "root";
+//        String password = "Muffin2325";
+//
+//        try (Connection connection = DriverManager.getConnection(url, username, password);
+//             PreparedStatement deleteStatement = connection.prepareStatement(sqlDelete)) {
+//            String schemaName = "paoproiect";
+//            connection.setSchema(schemaName);
+//
+//            deleteStatement.setString(1, curs.getCategorie());
+//            deleteStatement.setString(2, curs.getTitlu());
+//            int rowsDeleted = deleteStatement.executeUpdate();
+//
+//            if (rowsDeleted > 0) {
+//                System.out.println("Cursantul " + curs.getCategorie() + " " + curs.getTitlu() + " a fost șters cu succes.");
+//            } else {
+//                System.out.println("Nu există cursant cu numele " + curs.getCategorie() + " " + curs.getTitlu() + ".");
+//            }
+//
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//    }
+//
+//
+//
+//
+//    public void adaugaInstructor(List<Instructor> instructori) {
+//        String sqlCreateTable = "CREATE TABLE IF NOT EXISTS Utilizatori (" +
+//                "id INT AUTO_INCREMENT PRIMARY KEY," +
+//                "nume VARCHAR(50) NOT NULL," +
+//                "prenume VARCHAR(50) NOT NULL" +
+//                ")";
+//
+//        String sqlInsert = "INSERT INTO Instructori (nume, prenume) VALUES (?, ?)";
+//        String url = "jdbc:mysql://localhost:3306/paoproiect";
+//        String username = "root";
+//        String password = "Muffin2325";
+//
+//        try (Connection connection = DriverManager.getConnection(url, username, password);
+//             PreparedStatement createTableStatement = connection.prepareStatement(sqlCreateTable);
+//             PreparedStatement insertStatement = connection.prepareStatement(sqlInsert)) {
+//            String schemaName = "paoproiect";
+//            connection.setSchema(schemaName);
+//
+//            // Creare tabela Instructori (dacă nu există deja)
+//            createTableStatement.executeUpdate();
+//
+//            // Adăugare instrcutor în tabela Instructori
+//            for (Instructor instructor : instructori) {
+//                insertStatement.setString(1, instructor.getNume());
+//                insertStatement.setString(2, instructor.getPrenume());
+//                insertStatement.executeUpdate();
+//            }
+//
+//            System.out.println("Utilizatorii au fost adăugați în tabela Utilizatori.");
+//
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//    }
+//
+//    public void adaugaQuizuriInTabela(List<Quiz> quizList) {
+//        String sqlCreateTable = "CREATE TABLE IF NOT EXISTS Quiz (" +
+//                "id INT AUTO_INCREMENT PRIMARY KEY," +
+//                "nume VARCHAR(100) NOT NULL" +
+//                ")";
+//
+//        String sqlInsert = "INSERT INTO Quiz (nume) VALUES (?)";
+//        String url = "jdbc:mysql://localhost:3306/paoproiect";
+//        String username = "root";
+//        String password = "Muffin2325";
+//
+//        try (Connection connection = DriverManager.getConnection(url, username, password);
+//             PreparedStatement createTableStatement = connection.prepareStatement(sqlCreateTable);
+//             PreparedStatement insertStatement = connection.prepareStatement(sqlInsert)) {
+//            String schemaName = "paoproiect";
+//            connection.setSchema(schemaName);
+//
+//            // Creare tabela Quiz (dacă nu există deja)
+//            createTableStatement.executeUpdate();
+//
+//            // Adăugare quiz-uri în tabela Quiz
+//            for (Quiz quiz : quizList) {
+//                insertStatement.setString(1, quiz.getNume());
+//                insertStatement.executeUpdate();
+//            }
+//
+//            System.out.println("Quiz-urile au fost adăugate în tabela Quiz.");
+//
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//    }
+//
+//    public void updateCursant(Cursant cursant, String numeNou, String prenumeNou) {
+//        String url = "jdbc:mysql://localhost:3306/paoproiect";
+//        String username = "root";
+//        String password = "Muffin2325";
+//        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+//            String schemaName = "paoproiect";
+//            connection.setSchema(schemaName);
+//            String sql = "UPDATE Cursanti SET nume = ?, prenume = ? WHERE id = ?";
+//            PreparedStatement statement = connection.prepareStatement(sql);
+//            statement.setString(1, numeNou);
+//            statement.setString(2, prenumeNou);
+//            statement.setInt(3, getCursantId(cursant.getNume(), cursant.getPrenume()));
+//
+//            int rowsUpdated = statement.executeUpdate();
+//            if (rowsUpdated > 0) {
+//                System.out.println("Cursantul a fost actualizat cu succes în baza de date.");
+//            } else {
+//                System.out.println("Nu s-a găsit cursantul în baza de date sau nu s-au făcut modificări.");
+//            }
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//    }
+//    public void updateUtilizator(Utilizator utilizator, String numeNou, String prenumeNou) {
+//        String url = "jdbc:mysql://localhost:3306/paoproiect";
+//        String username = "root";
+//        String password = "Muffin2325";
+//        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+//            String schemaName = "paoproiect";
+//            connection.setSchema(schemaName);
+//            String sql = "UPDATE Utilizatori SET nume = ?, prenume = ? WHERE id = ?";
+//            PreparedStatement statement = connection.prepareStatement(sql);
+//            statement.setString(1, numeNou);
+//            statement.setString(2, prenumeNou);
+//            statement.setInt(3, getUtilizatorId(utilizator.getNume(), utilizator.getPrenume()));
+//
+//            int rowsUpdated = statement.executeUpdate();
+//            if (rowsUpdated > 0) {
+//                System.out.println("Utilizatorul a fost actualizat cu succes în baza de date.");
+//            } else {
+//                System.out.println("Nu s-a găsit Utilizatorul în baza de date sau nu s-au făcut modificări.");
+//            }
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//    }
+//    public void updateInstructor(Instructor instructor, String numeNou, String prenumeNou) {
+//        String url = "jdbc:mysql://localhost:3306/paoproiect";
+//        String username = "root";
+//        String password = "Muffin2325";
+//        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+//            String schemaName = "paoproiect";
+//            connection.setSchema(schemaName);
+//            String sql = "UPDATE Instructori SET nume = ?, prenume = ? WHERE id = ?";
+//            PreparedStatement statement = connection.prepareStatement(sql);
+//            statement.setString(1, numeNou);
+//            statement.setString(2, prenumeNou);
+//            statement.setInt(3, getInstructorId(instructor.getNume(), instructor.getPrenume()));
+//
+//            int rowsUpdated = statement.executeUpdate();
+//            if (rowsUpdated > 0) {
+//                System.out.println("Instructorul a fost actualizat cu succes în baza de date.");
+//            } else {
+//                System.out.println("Nu s-a găsit Instructorul în baza de date sau nu s-au făcut modificări.");
+//            }
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//    }
+//    public void updateCurs(Curs curs, String categorieNoua, String titluNou) {
+//        String url = "jdbc:mysql://localhost:3306/paoproiect";
+//        String username = "root";
+//        String password = "Muffin2325";
+//        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+//            String schemaName = "paoproiect";
+//            connection.setSchema(schemaName);
+//            String sql = "UPDATE Cursuri SET titlu = ?, categorie = ? WHERE id = ?";
+//            PreparedStatement statement = connection.prepareStatement(sql);
+//            statement.setString(1, titluNou);
+//            statement.setString(2, categorieNoua);
+//            statement.setInt(3, getInstructorId(curs.getTitlu(), curs.getCategorie()));
+//
+//            int rowsUpdated = statement.executeUpdate();
+//            if (rowsUpdated > 0) {
+//                System.out.println("Instructorul a fost actualizat cu succes în baza de date.");
+//            } else {
+//                System.out.println("Nu s-a găsit Instructorul în baza de date sau nu s-au făcut modificări.");
+//            }
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//    }
+//
+//    public Cursant getCursant(int cursantId) {
+//        Cursant cursant = null;
+//        String url = "jdbc:mysql://localhost:3306/paoproiect";
+//        String username = "root";
+//        String password = "Muffin2325";
+//
+//        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+//            String schemaName = "paoproiect";
+//            connection.setSchema(schemaName);
+//            String query = "SELECT nume, prenume FROM Cursanti WHERE id = ?";
+//            try (PreparedStatement statement = connection.prepareStatement(query)) {
+//                statement.setInt(1, cursantId);
+//                try (ResultSet resultSet = statement.executeQuery()) {
+//                    if (resultSet.next()) {
+//                        String nume = resultSet.getString("nume");
+//                        String prenume = resultSet.getString("prenume");
+//                        cursant = new Cursant(nume, prenume);
+//                    }
+//                }
+//            }
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//
+//        return cursant;
+//    }
+//    public Utilizator getUtilizator(int utilizatorId) {
+//        Utilizator utilizator = null;
+//        String url = "jdbc:mysql://localhost:3306/paoproiect";
+//        String username = "root";
+//        String password = "Muffin2325";
+//
+//        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+//            String schemaName = "paoproiect";
+//            connection.setSchema(schemaName);
+//            String query = "SELECT nume, prenume FROM Utilizatori WHERE id = ?";
+//            try (PreparedStatement statement = connection.prepareStatement(query)) {
+//                statement.setInt(1, utilizatorId);
+//                try (ResultSet resultSet = statement.executeQuery()) {
+//                    if (resultSet.next()) {
+//                        String nume = resultSet.getString("nume");
+//                        String prenume = resultSet.getString("prenume");
+//                        utilizator = new Utilizator(nume, prenume);
+//                    }
+//                }
+//            }
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//
+//        return utilizator;
+//    }
+//    public Instructor getInstructor(int instructorId) {
+//        Instructor instructor = null;
+//        String url = "jdbc:mysql://localhost:3306/paoproiect";
+//        String username = "root";
+//        String password = "Muffin2325";
+//
+//        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+//            String schemaName = "paoproiect";
+//            connection.setSchema(schemaName);
+//            String query = "SELECT nume, prenume FROM Instructor WHERE id = ?";
+//            try (PreparedStatement statement = connection.prepareStatement(query)) {
+//                statement.setInt(1, instructorId);
+//                try (ResultSet resultSet = statement.executeQuery()) {
+//                    if (resultSet.next()) {
+//                        String nume = resultSet.getString("nume");
+//                        String prenume = resultSet.getString("prenume");
+//                        instructor = new Instructor(nume, prenume);
+//                    }
+//                }
+//            }
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//
+//        return instructor;
+//    }
+//    public Curs getCurs(int cursId) {
+//        Curs curs = null;
+//        String url = "jdbc:mysql://localhost:3306/paoproiect";
+//        String username = "root";
+//        String password = "Muffin2325";
+//
+//        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+//            String schemaName = "paoproiect";
+//            connection.setSchema(schemaName);
+//            String query = "SELECT titlu, categorie FROM Cursuri WHERE id = ?";
+//            try (PreparedStatement statement = connection.prepareStatement(query)) {
+//                statement.setInt(1, cursId);
+//                try (ResultSet resultSet = statement.executeQuery()) {
+//                    if (resultSet.next()) {
+//                        String titlu = resultSet.getString("titlu");
+//                        String categorie = resultSet.getString("categorie");
+//                        curs = new Curs(titlu, categorie);
+//                    }
+//                }
+//            }
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//
+//        return curs;
+//    }
+    public void adaugaCursant(Cursant cursant) {
+        listaCursanti.add(cursant);
     }
     public void adaugaUtilizator(Utilizator utilizator) {
         listaUtilizatori.add(utilizator);
     }
-    public void adaugaCursant(Cursant cursant) {
-        listaCursanti.add(cursant);
-    }
     public void adaugaInstructor(Instructor instructor) {
         listaInstructori.add(instructor);
     }
+    public void adaugaCurs(Curs curs) {
+        listaCursuri.add(curs);
+    }
+    public void stergeCursant(Cursant cursant) {
+        listaCursanti.remove(cursant);
+    }
+    public void stergeUtilizator(Utilizator utilizator) {
+        listaUtilizatori.remove(utilizator);
+    }
+    public void stergeInstructor(Instructor instructor) {
+        listaInstructori.remove(instructor);
+    }
+    public void stergeCurs(Curs curs) {
+        listaCursuri.remove(curs);
+    }
+    public void updateCursant(Cursant cursant, String nume, String prenume){
+        cursant.setNume(nume);
+        cursant.setPrenume(prenume);
+    }
+    public void updateUtilizator(Utilizator utilizator, String nume, String prenume){
+        utilizator.setNume(nume);
+        utilizator.setPrenume(prenume);
+    }
+    public void updateInstructor(Instructor instructor, String nume, String prenume){
+        instructor.setNume(nume);
+        instructor.setPrenume(prenume);
+    }
+    public void updateCurs(Curs curs, String titlu, String categorie){
+        curs.setTitlu(titlu);
+        curs.setCategorie(categorie);
+    }
+
+
+
     public void adaugaQuiz(Curs curs, Quiz quiz) {
         if (mapQuizuri.containsKey(curs)) {
             mapQuizuri.get(curs).add(quiz);
@@ -510,6 +1132,7 @@ class GrupDeStudiu {
             lectie.printLectie();
         }
     }
+
 }
 
 //Clasa RaportPerformanta
@@ -573,7 +1196,6 @@ class RaportPerformanta {
 public class Main {
     public static void main(String[] args) {
         E_LearningService e_learningService = new E_LearningService();
-
         //Adaugare a 3 cursuri noi
         Curs curs1 = new Curs("Java Programming", "Programare");
         Curs curs2 = new Curs("Web Development", "IT");
@@ -704,5 +1326,8 @@ public class Main {
         for(Curs curs : e_learningService.getListaCursuri()) {
             curs.printCurs();
         }
+
+        //e_learningService.adaugaCursantiInTabela(cursanti);
+        //e_learningService.deleteCursant(cursant2);
     }
 }
